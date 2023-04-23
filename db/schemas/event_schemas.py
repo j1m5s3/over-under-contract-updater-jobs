@@ -19,3 +19,14 @@ class ContractInfoModel(BaseModel):
     under_betters_addresses: Optional[List] = Field(..., description="List of addresses of under betters")
     is_event_over: Optional[bool] = Field(..., description="Is the event over?")
 
+
+class ContractStatsModel(BaseModel):
+    winning_betters_addresses: Optional[List] = Field(..., description="List of addresses of winning betters")
+    contract_balance: Optional[float] = Field(..., description="Balance of the contract")
+    over_betters_balance: Optional[float] = Field(..., description="Balance of the over betters")
+    under_betters_balance: Optional[float] = Field(..., description="Balance of the under betters")
+    over_betting_payout_modifier: Optional[float] = Field(..., description="Payout modifier for over betters")
+    under_betting_payout_modifier: Optional[float] = Field(..., description="Payout modifier for under betters")
+    betting_fee: Optional[float] = Field(..., description="Betting fee")
+
+
