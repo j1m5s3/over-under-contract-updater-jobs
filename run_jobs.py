@@ -4,6 +4,7 @@ from dotenv import dotenv_values, find_dotenv
 from eth.provider.provider import Provider
 
 from db.mongo_interface import MongoInterface
+from jobs import EventUpdaterJobs
 
 # Load environment variables
 config = dotenv_values(dotenv_path=find_dotenv())
@@ -39,12 +40,19 @@ def event_updater_worker():
             "params": {"BTC": {"collection_name": "event_contracts_6h"},
                        "ETH": {"collection_name": "event_contracts_6h"}
                        }
+        },
+        {
+            "job_type": "betting_event_test",
+            "params": {
+                "BTC": {"collection_name": "event_contracts_test"},
+                "ETH": {"collection_name": "event_contracts_test"}
+            }
         }
     ]
-
-    #EventDeployerJobs(job_configs=job_configs,
-    #                  provider_handler=provider,
-    #                  mongo_handler=mongo_handler).job_runner()
+    is_test = True
+    EventUpdaterJobs(job_configs=job_configs,
+                     provider_handler=provider,
+                     mongo_handler=mongo_handler).job_runner(is_test=is_test)
 
     return
 
@@ -54,7 +62,7 @@ if __name__ == '__main__':
     # process queue
     processes = []
 
-    betting_events_job_process = multiprocessing.Process(target=event_deploy_worker)
+    betting_events_job_process = multiprocessing.Process(target=event_updater_worker())
 
     betting_events_job_process.start()
 

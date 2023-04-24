@@ -5,7 +5,7 @@ from .provider.provider import Provider
 
 
 class EventContractInterface:
-    def __init__(self, provider: Provider, contract_address, contract_abi):
+    def __init__(self, provider: Provider, contract_address: str, contract_abi):
         self.provider = provider
         self.w3_contract_handle = self.provider.w3.eth.contract(address=contract_address, abi=contract_abi)
         if self.w3_contract_handle is None:
@@ -14,15 +14,34 @@ class EventContractInterface:
         self.asset_symbol = self.__get_contract_asset_symbol(self.w3_contract_handle)
 
     @classmethod
+    def __send_txn(cls, provider, contract_function_handle):
+        txn = {
+            "from": provider.get_wallet_address(),
+            "nonce": provider.get_nonce()
+        }
+
+        function_call = contract_function_handle.build_transaction(txn)
+        signed_txn = provider.w3.eth.account.sign_transaction(function_call,
+                                                              private_key=provider.get_wallet_private_key())
+        send_txn = provider.w3.eth.send_raw_transaction(signed_txn.rawTransaction)
+        txn_receipt = provider.w3.eth.wait_for_transaction_receipt(send_txn)
+
+        return txn_receipt
+
+    @classmethod
     def __set_price_at_close(cls, price_at_close, w3_contract_handle, provider):
-        Web3.from_wei(price_at_close, 'ether')
-        tx_hash = w3_contract_handle.functions.setPriceAtClose(price_at_close).transact()
-        return provider.w3.eth.waitForTransactionReceipt(tx_hash)
+        price_in_wei = Web3.to_wei(price_at_close, 'ether')
+        contract_function = w3_contract_handle.functions.setPriceAtClose(price_in_wei)
+        txn_receipt = cls.__send_txn(provider, contract_function)
+
+        return txn_receipt
 
     @classmethod
     def __set_winners(cls, w3_contract_handle, provider):
-        tx_hash = w3_contract_handle.functions.setWinners().transact()
-        return provider.w3.eth.waitForTransactionReceipt(tx_hash)
+        contract_function = w3_contract_handle.functions.setWinners()
+        txn_receipt = cls.__send_txn(provider, contract_function)
+
+        return txn_receipt
 
     @classmethod
     def __check_is_over(cls, w3_contract_handle):
@@ -30,8 +49,10 @@ class EventContractInterface:
 
     @classmethod
     def __distribute_remaining_winnings(cls, w3_contract_handle, provider):
-        tx_hash = w3_contract_handle.functions.destroyContract().transact()
-        return provider.w3.eth.waitForTransactionReceipt(tx_hash)
+        contract_function = w3_contract_handle.functions.destroyContract()
+        txn_receipt = cls.__send_txn(provider, contract_function)
+
+        return txn_receipt
 
     @classmethod
     def __get_contract_balance(cls, w3_contract_handle):
@@ -79,7 +100,7 @@ class EventContractInterface:
         except Exception as e:
             raise Exception(f"Event close operations failed: {e}")
 
-        return {"price_at_close_receipt: ", price_at_close_receipt, "winners_receipt: ", winners_receipt}
+        return {"price_at_close_receipt": price_at_close_receipt, "winners_receipt": winners_receipt}
 
     def distribute_remaining_funds(self):
         try:
@@ -105,7 +126,7 @@ class EventContractInterface:
 
         return {"is_event_over": is_event_over}
 
-    def check_event_completion_stats(self):
+    def check_event_stats(self):
         try:
             winning_betters_addresses = self.__get_winning_betters_addresses(self.w3_contract_handle)
             contract_balance = self.__get_contract_balance(self.w3_contract_handle)
@@ -113,7 +134,6 @@ class EventContractInterface:
             under_betters_balance = self.__get_under_betters_balance(self.w3_contract_handle)
             over_betting_payout_modifier = self.__get_over_betting_payout_modifier(self.w3_contract_handle)
             under_betting_payout_modifier = self.__get_under_betting_payout_modifier(self.w3_contract_handle)
-            betting_fee = self.__get_betting_fee(self.w3_contract_handle)
 
         except Exception as e:
             raise Exception(f"Event totals check failed: {e}")
@@ -127,6 +147,5 @@ class EventContractInterface:
             "under_betters_balance": under_betters_balance,
             "over_betting_payout_modifier": over_betting_payout_modifier,
             "under_betting_payout_modifier": under_betting_payout_modifier,
-            "betting_fee": betting_fee
         }
 
