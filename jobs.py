@@ -55,7 +55,6 @@ class EventUpdaterJobs:
         for asset in job_config["params"]:
             try:
                 params = job_config['params'][asset]
-                print(datetime.now().timestamp())
                 completed_to_be_updated_event_records = mongo_handler.find(
                     collection=params["collection_name"],
                     query={"is_event_over": False,
