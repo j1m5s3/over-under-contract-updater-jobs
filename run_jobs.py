@@ -49,7 +49,12 @@ def event_updater_worker():
             }
         }
     ]
-    is_test = True
+
+    if config['is_test'].lower() == "true":
+        is_test = True
+    else:
+        is_test = False
+
     EventUpdaterJobs(job_configs=job_configs,
                      provider_handler=provider,
                      mongo_handler=mongo_handler).job_runner(is_test=is_test)

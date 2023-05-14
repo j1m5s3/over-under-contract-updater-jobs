@@ -48,6 +48,10 @@ class EventContractInterface:
         return w3_contract_handle.functions.isEventOver().call()
 
     @classmethod
+    def __check_is_payout_over(cls, w3_contract_handle):
+        return w3_contract_handle.functions.isPayoutPeriodOver().call()
+
+    @classmethod
     def __distribute_remaining_winnings(cls, w3_contract_handle, provider):
         contract_function = w3_contract_handle.functions.destroyContract()
         txn_receipt = cls.__send_txn(provider, contract_function)
@@ -115,8 +119,9 @@ class EventContractInterface:
     def check_contract_status(self) -> Optional[Dict]:
         try:
             is_event_over = self.__check_is_over(self.w3_contract_handle)
+            is_payout_period_over = self.__check_is_payout_over(self.w3_contract_handle)
 
-            if is_event_over is not None:
+            if is_event_over is not None and is_payout_period_over is not None:
                 print(f"Checked event {self.contract_name} {self.asset_symbol} status")
             else:
                 print(f"Unable to check event {self.contract_name} {self.asset_symbol} status")
@@ -124,7 +129,7 @@ class EventContractInterface:
         except Exception as e:
             raise Exception(f"Event status check failed: {e}")
 
-        return {"is_event_over": is_event_over}
+        return {"is_event_over": is_event_over, "is_payout_period_over": is_payout_period_over}
 
     def check_event_stats(self):
         try:

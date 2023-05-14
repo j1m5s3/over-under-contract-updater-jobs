@@ -10,6 +10,7 @@ class ContractInfoModel(BaseModel):
     asset_symbol: Optional[str] = Field(..., description="Symbol of the asset")
     betting_close: Optional[int] = Field(..., description="Timestamp of the betting close")
     event_close: Optional[int] = Field(..., description="Timestamp of the event close")
+    payout_close: Optional[int] = Field(..., description="Timestamp of the payout close")
     contract_balance: Optional[float] = Field(..., description="Balance of the contract")
     over_betters_balance: Optional[float] = Field(..., description="Balance of the over betters")
     under_betters_balance: Optional[float] = Field(..., description="Balance of the under betters")
@@ -18,6 +19,7 @@ class ContractInfoModel(BaseModel):
     over_betters_addresses: Optional[List] = Field(..., description="List of addresses of over betters")
     under_betters_addresses: Optional[List] = Field(..., description="List of addresses of under betters")
     is_event_over: Optional[bool] = Field(..., description="Is the event over?")
+    is_payout_period_over: Optional[bool] = Field(..., description="Is the payout over?")
 
 
 class ContractUpdateModel(BaseModel):
@@ -28,5 +30,6 @@ class ContractUpdateModel(BaseModel):
     over_betting_payout_modifier: Optional[float] = Field(..., description="Payout modifier for over betters")
     under_betting_payout_modifier: Optional[float] = Field(..., description="Payout modifier for under betters")
     is_event_over: Optional[bool] = Field(None, description="Is the event over?")
+    is_payout_period_over: Optional[bool] = Field(None, description="Is the payout over?")
 
 

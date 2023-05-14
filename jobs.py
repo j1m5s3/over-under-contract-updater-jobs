@@ -157,3 +157,13 @@ class EventUpdaterJobs:
             return mongo_response['price']
         else:
             raise Exception("Invalid asset symbol")
+
+
+class EventDataJobs:
+
+    def __init__(self, job_configs: List,
+                 provider_handler: Provider,
+                 mongo_handler: MongoInterface):
+        self.job_configs = job_configs
+        self.provider_handler = provider_handler
+        self.mongo_handler = mongo_handler
